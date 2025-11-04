@@ -1,0 +1,33 @@
+name: Batch PDF to HTML Conversion
+on:
+  push:
+    paths:
+      - '**/*.pdf'
+
+jobs:
+  pdf2html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install pdfminer.six
+
+      - name: Convert PDF to HTML
+        run: |
+          for pdf in $(find . -name '*.pdf'); do
+            out="${pdf%.pdf}.html"
+            python3 -c "from pdfminer.high_level import extract_text; text = extract_text('$pdf'); out='$out'; with open(out, 'w', encoding='utf-8') as f: f.write('<html><body>' + text.replace('\n', '<br/>') + '</body></html>')"
+          done
+
+      - name: Upload HTML outputs
+        uses: actions/upload-artifact@v3
+        with:
+          name: html-files
+          path: '**/*.html'
