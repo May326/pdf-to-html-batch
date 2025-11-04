@@ -19,11 +19,12 @@ jobs:
       - name: Install dependencies
         run: pip install pdfminer.six
 
-      - name: Convert PDF to HTML
+      - name: Convert PDFs to HTML
         run: |
           for pdf in $(find . -name '*.pdf'); do
             out="${pdf%.pdf}.html"
-            python3 -c "from pdfminer.high_level import extract_text; text = extract_text('$pdf'); out='$out'; with open(out, 'w', encoding='utf-8') as f: f.write('<html><body>' + text.replace('\n', '<br/>') + '</body></html>')"
+            text=$(python3 -c "from pdfminer.high_level import extract_text; import sys; print(extract_text(sys.argv[1]));" "$pdf")
+            echo "<html><body><pre>${text}</pre></body></html>" > "$out"
           done
 
       - name: Upload HTML outputs
